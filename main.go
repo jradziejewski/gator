@@ -1,10 +1,16 @@
 package main
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 	"os"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/jradziejewski/gator/internal/config"
+	"github.com/jradziejewski/gator/internal/database"
+	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -15,6 +21,16 @@ func main() {
 	}
 
 	st := &state{cfg: &cfg}
+
+	db, err := sql.Open("postgres", st.cfg.DBUrl)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	dbQueries := database.New(db)
+
+	st.db = dbQueries
 
 	args := os.Args
 
@@ -27,6 +43,7 @@ func main() {
 
 	cmds := newCommands()
 	cmds.register("login", handlerLogin)
+	cmds.register("register", handlerRegister)
 
 	cmd := command{
 		name: args[0],
@@ -42,6 +59,7 @@ func main() {
 // Struct Types
 
 type state struct {
+	db  *database.Queries
 	cfg *config.Config
 }
 
@@ -53,14 +71,21 @@ type commands struct {
 	handlers map[string]func(*state, command) error
 }
 
-// Functions
+// Handlers
 
 func handlerLogin(s *state, cmd command) error {
 	if len(cmd.args) != 1 {
 		return fmt.Errorf("Accepts exactly one argument <username>")
 	}
 
-	err := s.cfg.SetUser(cmd.args[0])
+	username := cmd.args[0]
+
+	_, err := s.db.GetUser(context.Background(), username)
+	if err != nil {
+		return fmt.Errorf("User %s does not exist in database", username)
+	}
+
+	err = s.cfg.SetUser(username)
 	if err != nil {
 		return err
 	}
@@ -68,6 +93,34 @@ func handlerLogin(s *state, cmd command) error {
 	fmt.Println("Username has been set")
 	return nil
 }
+
+func handlerRegister(s *state, cmd command) error {
+	if len(cmd.args) != 1 {
+		return fmt.Errorf("Accepts exactly one argument <username>")
+	}
+
+	now := time.Now().UTC()
+	params := database.CreateUserParams{
+		ID:        uuid.New(),
+		CreatedAt: now,
+		UpdatedAt: now,
+		Name:      cmd.args[0],
+	}
+	_, err := s.db.CreateUser(context.Background(), params)
+	if err != nil {
+		return err
+	}
+
+	err = s.cfg.SetUser(cmd.args[0])
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("User %s created successfully\n", cmd.args[0])
+	return nil
+}
+
+// Util Functions
 
 func newCommands() *commands {
 	return &commands{
