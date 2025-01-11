@@ -86,3 +86,15 @@ func handlerReset(s *state, cmd command) error {
 	fmt.Println("The users table has been reset")
 	return nil
 }
+
+// Agg
+
+func handlerAgg(s *state, cmd command) error {
+	feed, err := fetchFeed(context.Background(), "https://www.wagslane.dev/index.xml")
+	if err != nil {
+		return err
+	}
+	fmt.Printf("%+v", feed)
+
+	return nil
+}
