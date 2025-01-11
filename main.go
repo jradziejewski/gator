@@ -45,6 +45,7 @@ func main() {
 	cmds.register("login", handlerLogin)
 	cmds.register("register", handlerRegister)
 	cmds.register("reset", handlerReset)
+	cmds.register("users", handlerUsers)
 
 	cmd := command{
 		name: args[0],
@@ -128,6 +129,23 @@ func handlerReset(s *state, cmd command) error {
 	}
 
 	fmt.Println("The users table has been reset")
+	return nil
+}
+
+func handlerUsers(s *state, cmd command) error {
+	users, err := s.db.GetUsers(context.Background())
+	if err != nil {
+		return err
+	}
+
+	for _, user := range users {
+		fmt.Printf("- %s", user)
+		if s.cfg.CurrentUserName == user {
+			fmt.Printf(" (current)")
+		}
+		fmt.Println()
+	}
+
 	return nil
 }
 
