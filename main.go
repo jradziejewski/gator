@@ -44,6 +44,7 @@ func main() {
 	cmds := newCommands()
 	cmds.register("login", handlerLogin)
 	cmds.register("register", handlerRegister)
+	cmds.register("reset", handlerReset)
 
 	cmd := command{
 		name: args[0],
@@ -117,6 +118,16 @@ func handlerRegister(s *state, cmd command) error {
 	}
 
 	fmt.Printf("User %s created successfully\n", cmd.args[0])
+	return nil
+}
+
+func handlerReset(s *state, cmd command) error {
+	err := s.db.DeleteUsers(context.Background())
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("The users table has been reset")
 	return nil
 }
 
