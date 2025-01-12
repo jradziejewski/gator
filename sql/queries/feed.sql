@@ -9,3 +9,12 @@ VALUES (
     $6
 )
 RETURNING *;
+
+
+-- name: GetFeeds :many
+SELECT f.*, u.name as author_name FROM feeds f
+left join users u
+on u.id = f.user_id;
+
+-- name: DeleteFeeds :exec
+DELETE FROM feeds;

@@ -66,7 +66,7 @@ func handlerUsers(s *state, cmd command) error {
 
 	for _, user := range users {
 		fmt.Printf("- %s", user)
-		if s.cfg.CurrentUserName == user {
+		if s.cfg.CurrentUserName == user.Name {
 			fmt.Printf(" (current)")
 		}
 		fmt.Println()
@@ -84,7 +84,7 @@ func handlerAddFeed(s *state, cmd command) error {
 
 	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
 	if err != nil {
-		return err
+		return fmt.Errorf("User not found in database")
 	}
 
 	now := time.Now().UTC()
@@ -106,6 +106,25 @@ func handlerAddFeed(s *state, cmd command) error {
 	return nil
 }
 
+func handlerFeeds(s *state, cmd command) error {
+	feeds, err := s.db.GetFeeds(context.Background())
+	if err != nil {
+		return err
+	}
+
+	for _, feed := range feeds {
+		var authorName string
+		if feed.AuthorName.Valid {
+			authorName = feed.AuthorName.String
+		}
+
+		fmt.Printf("- '%s (%s) [author: %s]", feed.Name, feed.Url, authorName)
+		fmt.Println()
+	}
+
+	return nil
+}
+
 // Reset
 
 func handlerReset(s *state, cmd command) error {
@@ -114,7 +133,12 @@ func handlerReset(s *state, cmd command) error {
 		return err
 	}
 
-	fmt.Println("The users table has been reset")
+	err = s.db.DeleteFeeds(context.Background())
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("The database has been reset")
 	return nil
 }
 
