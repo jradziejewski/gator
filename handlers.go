@@ -75,6 +75,37 @@ func handlerUsers(s *state, cmd command) error {
 	return nil
 }
 
+// Feed handlers
+
+func handlerAddFeed(s *state, cmd command) error {
+	if len(cmd.args) != 2 {
+		return fmt.Errorf("Accepts exactly two arguments <name> <url>")
+	}
+
+	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
+	if err != nil {
+		return err
+	}
+
+	now := time.Now().UTC()
+	params := database.CreateFeedParams{
+		ID:        uuid.New(),
+		CreatedAt: now,
+		UpdatedAt: now,
+		Name:      cmd.args[0],
+		Url:       cmd.args[1],
+		UserID:    user.ID,
+	}
+
+	_, err = s.db.CreateFeed(context.Background(), params)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Feed %s created successfully\n", cmd.args[0])
+	return nil
+}
+
 // Reset
 
 func handlerReset(s *state, cmd command) error {
