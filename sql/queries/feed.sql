@@ -16,5 +16,9 @@ SELECT f.*, u.name as author_name FROM feeds f
 left join users u
 on u.id = f.user_id;
 
+-- name: GetFeed :one
+SELECT * from feeds
+WHERE url = $1;
+
 -- name: DeleteFeeds :exec
 DELETE FROM feeds;
