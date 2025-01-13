@@ -41,3 +41,21 @@ func handlerFollow(s *state, cmd command) error {
 	fmt.Printf("User %s followed feed '%s'\n", follow.UserName, follow.FeedName)
 	return nil
 }
+
+func handlerFollowing(s *state, cmd command) error {
+	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
+	if err != nil {
+		return fmt.Errorf("User not found in database")
+	}
+
+	following, err := s.db.GetFeedFollowsForUser(context.Background(), user.ID)
+	if err != nil {
+		return err
+	}
+
+	for _, follow := range following {
+		fmt.Printf("- '%s'\n", follow.FeedName)
+	}
+
+	return nil
+}
