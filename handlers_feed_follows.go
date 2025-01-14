@@ -9,14 +9,9 @@ import (
 	"github.com/jradziejewski/gator/internal/database"
 )
 
-func handlerFollow(s *state, cmd command) error {
+func handlerFollow(s *state, cmd command, user database.User) error {
 	if len(cmd.args) != 1 {
 		return fmt.Errorf("Accepts exactly one argument <url>")
-	}
-
-	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("User not found in database")
 	}
 
 	feed, err := s.db.GetFeed(context.Background(), cmd.args[0])
@@ -42,12 +37,7 @@ func handlerFollow(s *state, cmd command) error {
 	return nil
 }
 
-func handlerFollowing(s *state, cmd command) error {
-	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("User not found in database")
-	}
-
+func handlerFollowing(s *state, cmd command, user database.User) error {
 	following, err := s.db.GetFeedFollowsForUser(context.Background(), user.ID)
 	if err != nil {
 		return err

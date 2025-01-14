@@ -9,14 +9,9 @@ import (
 	"github.com/jradziejewski/gator/internal/database"
 )
 
-func handlerAddFeed(s *state, cmd command) error {
+func handlerAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.args) != 2 {
 		return fmt.Errorf("Accepts exactly two arguments <name> <url>")
-	}
-
-	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("User not found in database")
 	}
 
 	now := time.Now().UTC()
