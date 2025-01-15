@@ -49,3 +49,23 @@ func handlerFollowing(s *state, cmd command, user database.User) error {
 
 	return nil
 }
+
+func handlerUnfollow(s *state, cmd command, user database.User) error {
+	if len(cmd.args) != 1 {
+		return fmt.Errorf("Accepts exactly one argument <url>")
+	}
+
+	params := database.DeleteFollowParams{
+		UserID: user.ID,
+		Url:    cmd.args[0],
+	}
+
+	err := s.db.DeleteFollow(context.Background(), params)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Unfollowed successfully")
+
+	return nil
+}
