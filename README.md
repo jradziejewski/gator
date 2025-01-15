@@ -1,1 +1,3 @@
 # Still in progress...
+
+Feed Aggregator in Go. Using postgresql
