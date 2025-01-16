@@ -12,6 +12,10 @@ A powerful command-line RSS feed aggregator written in Go. Stay up to date with 
 - 🔐 Authentication system
 - 🗃️ PostgreSQL storage
 
+## Still ToDo:
+
+- Improve logging & error messages
+
 ## Prerequisites
 
 Before installing Gator, you need:
