@@ -69,11 +69,11 @@ gator feeds
 ```
 
 4. Start aggregating:
-5. ```bash
+   ```bash
    gator agg 3600s
    ```
 
-4. Browse recent posts:
+5. Browse recent posts:
 ```bash
 gator browse
 ```
