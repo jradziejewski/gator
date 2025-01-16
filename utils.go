@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/jradziejewski/gator/internal/config"
 	"github.com/jradziejewski/gator/internal/database"
@@ -37,4 +39,31 @@ func (c *commands) run(s *state, cmd command) error {
 	}
 
 	return handler(s, cmd)
+}
+
+func parsePubDate(date string) (time.Time, error) {
+	layouts := []string{
+		"Mon, 02 Jan 2006 15:04:05 -0700", // Common RSS
+		"2006-01-02T15:04:05Z",            // ISO 8601
+		"02 Jan 2006 15:04:05 -0700",      // Alternate format
+	}
+	var pubDate time.Time
+	var err error
+
+	for _, layout := range layouts {
+		pubDate, err = time.Parse(layout, date)
+		if err == nil {
+			break
+		}
+	}
+
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	return pubDate, nil
+}
+
+func isDuplicateError(err error) bool {
+	return strings.Contains(err.Error(), "unique constraint")
 }

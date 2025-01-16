@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jradziejewski/gator/internal/database"
 )
 
@@ -31,9 +31,34 @@ func scrapeFeeds(s *state) error {
 	}
 
 	err = s.db.MarkFeedFetched(context.Background(), params)
+	if err != nil {
+		return err
+	}
 
 	for _, item := range feed.Channel.Item {
-		fmt.Printf("- %s\n", item.Title)
+		pubDate, err := parsePubDate(item.PubDate)
+		if err != nil {
+			return err
+		}
+
+		postParams := database.CreatePostParams{
+			ID:          uuid.New(),
+			CreatedAt:   now,
+			UpdatedAt:   now,
+			Title:       item.Title,
+			Url:         item.Link,
+			Description: item.Description,
+			PublishedAt: pubDate,
+			FeedID:      feedToFetch.ID,
+		}
+		_, err = s.db.CreatePost(context.Background(), postParams)
+		if err != nil {
+			if isDuplicateError(err) {
+				continue
+			}
+			return err
+		}
+
 	}
 
 	return nil
