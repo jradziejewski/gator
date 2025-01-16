@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -35,6 +36,8 @@ func scrapeFeeds(s *state) error {
 		return err
 	}
 
+	fmt.Printf("Fetching feed %s\n", feedToFetch.Name)
+
 	for _, item := range feed.Channel.Item {
 		pubDate, err := parsePubDate(item.PubDate)
 		if err != nil {
@@ -51,14 +54,14 @@ func scrapeFeeds(s *state) error {
 			PublishedAt: pubDate,
 			FeedID:      feedToFetch.ID,
 		}
-		_, err = s.db.CreatePost(context.Background(), postParams)
+		post, err := s.db.CreatePost(context.Background(), postParams)
 		if err != nil {
 			if isDuplicateError(err) {
 				continue
 			}
 			return err
 		}
-
+		fmt.Printf("New post: '%s' added to database\n", post.Title)
 	}
 
 	return nil
