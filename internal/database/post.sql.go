@@ -7,7 +7,6 @@ package database
 
 import (
 	"context"
-	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -65,9 +64,9 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 }
 
 const getPostsForUser = `-- name: GetPostsForUser :many
-SELECT p.id, p.created_at, p.updated_at, title, p.url, description, published_at, feed_id, f.id, f.created_at, f.updated_at, name, f.url, user_id, last_fetched_at FROM posts p
-INNER JOIN feeds f
-ON p.feed_id = f.id
+SELECT p.id, p.created_at, p.updated_at, title, url, description, published_at, p.feed_id, f.id, f.created_at, f.updated_at, user_id, f.feed_id FROM posts p
+INNER JOIN feed_follows f
+ON p.feed_id = f.feed_id
 WHERE f.user_id = $1
 ORDER BY p.published_at DESC
 LIMIT $2
@@ -79,21 +78,19 @@ type GetPostsForUserParams struct {
 }
 
 type GetPostsForUserRow struct {
-	ID            uuid.UUID
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
-	Title         string
-	Url           string
-	Description   string
-	PublishedAt   time.Time
-	FeedID        uuid.UUID
-	ID_2          uuid.UUID
-	CreatedAt_2   time.Time
-	UpdatedAt_2   time.Time
-	Name          string
-	Url_2         string
-	UserID        uuid.UUID
-	LastFetchedAt sql.NullTime
+	ID          uuid.UUID
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	Title       string
+	Url         string
+	Description string
+	PublishedAt time.Time
+	FeedID      uuid.UUID
+	ID_2        uuid.UUID
+	CreatedAt_2 time.Time
+	UpdatedAt_2 time.Time
+	UserID      uuid.UUID
+	FeedID_2    uuid.UUID
 }
 
 func (q *Queries) GetPostsForUser(ctx context.Context, arg GetPostsForUserParams) ([]GetPostsForUserRow, error) {
@@ -117,10 +114,8 @@ func (q *Queries) GetPostsForUser(ctx context.Context, arg GetPostsForUserParams
 			&i.ID_2,
 			&i.CreatedAt_2,
 			&i.UpdatedAt_2,
-			&i.Name,
-			&i.Url_2,
 			&i.UserID,
-			&i.LastFetchedAt,
+			&i.FeedID_2,
 		); err != nil {
 			return nil, err
 		}
