@@ -68,6 +68,11 @@ gator addfeed "Hacker News" "https://news.ycombinator.com/rss"
 gator feeds
 ```
 
+4. Start aggregating:
+5. ```bash
+   gator agg 3600s
+   ```
+
 4. Browse recent posts:
 ```bash
 gator browse
